@@ -3,7 +3,6 @@ import { readFileSync } from 'fs'
 import delay from 'delay'
 import 'dotenv/config'
 
-const ABI = readFileSync('./abi.json', 'utf8')
 const checkBalanceABI = ['function balanceOf(address) view returns (uint256)']
 const provider = new ethers.JsonRpcProvider(`${process.env.RPC_URL}`)
 
@@ -22,7 +21,7 @@ const checkBalanceUSDC = async (privateKey) => {
     const balanceEther = ethers.formatUnits(balance, 18)
     const parse = parseFloat(balanceEther).toFixed(2)
 
-    console.log(`Result : ${parse} USDC`)
+    console.log(`Result : ${walletAddress} - ${parse} USDC`)
   } catch (error) {
     console.error(error)
   }
@@ -30,15 +29,17 @@ const checkBalanceUSDC = async (privateKey) => {
 
 const mintHoney = async (privateKey) => {
   try {
+    const ABI = ['function mint(address,address,uint256)']
     const ContractAddress = process.env.SC_POOLMINTHONEY
     const wallet = new ethers.Wallet(privateKey, provider)
     const walletAddress = wallet.address
+    const randomAmount = Math.floor(Math.random() * 10) + 1
 
     const contract = new ethers.Contract(ContractAddress, ABI, wallet)
     const data = contract.interface.encodeFunctionData('mint', [
       `${walletAddress}`,
       '0x6581e59A1C8dA66eD0D313a0d4029DcE2F746Cc5',
-      ethers.parseEther('0.1399'),
+      ethers.parseEther(`0.${randomAmount}122`),
     ])
     const transaction = {
       gasLimit: 200000,
@@ -56,15 +57,16 @@ const mintHoney = async (privateKey) => {
 
 const supply = async (privateKey) => {
   try {
-    const ABI = readFileSync('./abi2.json', 'utf8')
+    const ABI = ['function supply(address,uint256,address,uint16)']
     const ContractAddress = process.env.SC_POOLSUPPLYBORROW
     const wallet = new ethers.Wallet(privateKey, provider)
     const walletAddress = wallet.address
+    const randomAmount = Math.floor(Math.random() * 10) + 1
 
     const contract = new ethers.Contract(ContractAddress, ABI, wallet)
     const data = contract.interface.encodeFunctionData('supply', [
       `${process.env.SC_HONEY}`,
-      ethers.parseEther('1'),
+      ethers.parseEther(`0.${randomAmount}`),
       walletAddress,
       0,
     ])
@@ -83,30 +85,38 @@ const supply = async (privateKey) => {
   }
 }
 
-const privateKey = process.env.PRIVATE_KEY
-
 ;(async () => {
-  console.log('Checking Balance USDC...')
-  const myBalanceUSDC = await checkBalanceUSDC(privateKey)
-  if (myBalanceUSDC) console.log(myBalanceUSDC)
-  console.log('Minting Honey...')
+  try {
+    const privateKey = readFileSync('./privatekey.txt', 'utf8').split('\n')
+    for (let i = 0; i < privateKey.length; i++) {
+      let a = privateKey[i].replace(/\s/g, '')
+      console.log('Checking Balance USDC...')
+      const myBalanceUSDC = await checkBalanceUSDC(a)
+      if (myBalanceUSDC) console.log(myBalanceUSDC)
+      console.log('Minting Honey...')
 
-  let statusA = true
-  while (statusA) {
-    const myMintHoney = await mintHoney(privateKey)
-    if (myMintHoney == 1) {
-      console.log('Honey Minted!')
-      statusA = false
-    }
-    await delay(30000)
-  }
+      let statusA = true
+      while (statusA) {
+        const myMintHoney = await mintHoney(a)
+        if (myMintHoney == 1) {
+          console.log('Honey Minted!')
+          statusA = false
+        }
+        await delay(12000)
+      }
+      console.log('Supply Honey...')
 
-  let statusB = true
-  while (statusB) {
-    const supplyStatus = await supply(privateKey)
-    if (supplyStatus == 1) {
-      console.log('Supply Successful!')
-      statusB = false
+      let statusB = true
+      while (statusB) {
+        const supplyStatus = await supply(a)
+        if (supplyStatus == 1) {
+          console.log('Supply Successful!')
+          statusB = false
+        }
+        await delay(12000)
+      }
     }
+  } catch (error) {
+    console.error(error)
   }
 })()
