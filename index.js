@@ -2,7 +2,6 @@ import { ethers } from 'ethers'
 import { readFileSync } from 'fs'
 import delay from 'delay'
 import 'dotenv/config'
-import { exit } from 'process'
 
 const checkBalanceABI = ['function balanceOf(address) view returns (uint256)']
 const provider = new ethers.JsonRpcProvider(`${process.env.RPC_URL}`)

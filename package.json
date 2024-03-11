@@ -8,7 +8,12 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
+  "author": "khairulkrhacx",
+  "homepage": "https://github.com/khairulkrhacx",
+  "repository": {
+    "type": "git", 
+    "url": "https://github.com/khairulkrhacx/bera-interactionsample.git"
+    },
   "license": "ISC",
   "dependencies": {
     "delay": "^6.0.0",
