@@ -140,55 +140,57 @@ const supply = async (privateKey) => {
 }
 
 ;(async () => {
-  try {
-    const privateKey = readFileSync('./privatekey.txt', 'utf8').split('\n')
-    console.log('----------------')
-    list: for (let i = 0; i < privateKey.length; i++) {
-      let a = privateKey[i].replace(/\s/g, '')
-      console.log('Checking Balance USDC...')
-      const myBalanceUSDC = await checkBalanceUSDC(a)
-      if (myBalanceUSDC > 1) {
-        console.log(myBalanceUSDC)
-      } else if (myBalanceUSDC < 0.1) {
-        console.log('swap $BERA to $USDC first.')
-        break list
-      }
-      console.log('Minting Honey...')
-
-      let statusA = true
-      while (statusA) {
-        const myMintHoney = await mintHoney(a)
-        if (myMintHoney == 1) {
-          console.log('Honey Minted!')
-          statusA = false
-        } else {
-          const approveStatus = await approveUSDC(a)
-          approveStatus == 1
-            ? console.log('Approve Successful!')
-            : console.log('Approve Already!')
-          console.log('Supply Honey...')
+  while (true) {
+    try {
+      const privateKey = readFileSync('./privatekey.txt', 'utf8').split('\n')
+      console.log('----------------')
+      list: for (let i = 0; i < privateKey.length; i++) {
+        let a = privateKey[i].replace(/\s/g, '')
+        console.log('Checking Balance USDC...')
+        const myBalanceUSDC = await checkBalanceUSDC(a)
+        if (myBalanceUSDC > 1) {
+          console.log(myBalanceUSDC)
+        } else if (myBalanceUSDC < 0.1) {
+          console.log('swap $BERA to $USDC first.')
+          break list
         }
-        await delay(12000)
-      }
+        console.log('Minting Honey...')
 
-      let statusB = true
-      while (statusB) {
-        const supplyStatus = await supply(a)
-        if (supplyStatus == 1) {
-          console.log('Supply Successful!')
-          statusB = false
-        } else {
-          const approveStatus = await approveHoney(a)
-          approveStatus == 1
-            ? console.log('Approve Successful!')
-            : console.log('Approve Already!')
-          console.log('Supply Honey...')
+        let statusA = true
+        while (statusA) {
+          const myMintHoney = await mintHoney(a)
+          if (myMintHoney == 1) {
+            console.log('Honey Minted!')
+            statusA = false
+          } else {
+            const approveStatus = await approveUSDC(a)
+            approveStatus == 1
+              ? console.log('Approve Successful!')
+              : console.log('Approve Already!')
+            console.log('Supply Honey...')
+          }
+          await delay(12000)
         }
-        await delay(12000)
-        console.log('----------------')
+
+        let statusB = true
+        while (statusB) {
+          const supplyStatus = await supply(a)
+          if (supplyStatus == 1) {
+            console.log('Supply Successful!')
+            statusB = false
+          } else {
+            const approveStatus = await approveHoney(a)
+            approveStatus == 1
+              ? console.log('Approve Successful!')
+              : console.log('Approve Already!')
+            console.log('Supply Honey...')
+          }
+          await delay(12000)
+          console.log('----------------')
+        }
       }
+    } catch (error) {
+      console.error(error)
     }
-  } catch (error) {
-    console.error(error)
   }
 })()
